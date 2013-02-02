@@ -1,7 +1,7 @@
 Spire
 =====
 
-*Spire* is a formally verified dependently typed programming language that
+A formally verified dependently typed programming language that
 facilitates generic programming.
 
 Generic Programming
