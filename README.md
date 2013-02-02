@@ -11,7 +11,7 @@ Generic Programming
 An eliminator for `Type` allows you to perform case analysis on all types in the
 language (at any universe level, in a predicative hierarchy of universes).
 Essentially, the entire language is one big Martin-Löf universe.
-More specifically, the entire language is a super universe, which is a family of successively
+More specifically, the entire language is a super universe: a family of successively
 larger universes indexed by their level in the universe hierarchy.
 
 Formally Verified
