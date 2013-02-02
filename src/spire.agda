@@ -1,6 +1,6 @@
 open import Foreign.Haskell
 open import IO.Primitive
-module Spire.Main where
+module spire where
 
 postulate run : IO Unit
 {-# IMPORT Spire.CLI #-}
@@ -8,3 +8,5 @@ postulate run : IO Unit
 
 main : IO Unit
 main = run
+
+

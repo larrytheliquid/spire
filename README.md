@@ -30,4 +30,4 @@ Development
 -----------
 
 To compile:
-`agda --compile -i src/ -i ~/opt/agda-stdlib/src/ --ghc-flag=-i/Users/larrytheliquid/opt/agda-stdlib/ffi src/Spire/Main.agda`
+`agda -c --compile-dir=. -i src/ -i ~/opt/agda-stdlib/src/ --ghc-flag=-i/Users/larrytheliquid/opt/agda-stdlib/ffi --ghc-flag=-i/Users/larrytheliquid/src/spire/src src/spire.agda`
