@@ -18,5 +18,5 @@ This kernel language is formally verified in *Agda*, and proves the following pr
 * Strong Normalization
 * Correctness of Type Checking
 
-The *Haskell* program translates surface syntax into a `PreTerm` value, which is a normal non-dependent
+The *Haskell* program translates surface syntax into a `PreTerm` value, which is an ordinary non-dependent
 type. The `PreTerm` is then passed to the verified type checker via the Agda-Haskell FFI.
