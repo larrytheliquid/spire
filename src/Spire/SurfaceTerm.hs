@@ -1,4 +1,4 @@
-module SurfaceTerm where
+module Spire.SurfaceTerm where
 
 data PreTerm =
     Bool | Type

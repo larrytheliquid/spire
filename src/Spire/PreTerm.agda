@@ -19,6 +19,9 @@ data PreTerm : Set where
   `true `false : PreTerm
   _`,_ : PreTerm → PreTerm → PreTerm
 
+{-# IMPORT Spire.SurfaceTerm #-}
+{-# COMPILED_DATA PreTerm Spire.SurfaceTerm.PreTerm Bool Type Sg True False Pair #-}
+
 erase : ∀{Γ ℓ Τ} → Term Γ ℓ Τ → PreTerm
 erase `Bool = `Bool
 erase (`Σ A B) = `Σ (erase A) (erase B)
@@ -71,3 +74,14 @@ check Γ ℓ .(`Σ A B) (a `, b) | just (A , B , refl) | ill msg = ill msg
 check Γ ℓ X (a `, b) | nothing = ill "Checking a pair against a non-Σ."
 
 ----------------------------------------------------------------------
+
+checkClosed = check ∅
+checkerLevel = 3
+
+isTyped : PreTerm → PreTerm → Bool
+isTyped A a with checkClosed (suc checkerLevel) `Type A
+isTyped ._ a | well A with checkClosed checkerLevel A a
+isTyped .(erase A) .(erase a) | well A | well a = true
+isTyped .(erase A) a | well A | ill msg = false
+isTyped A a | ill msg = false
+

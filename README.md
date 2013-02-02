@@ -25,3 +25,9 @@ This kernel language is formally verified in *Agda*, and proves the following pr
 
 The *Haskell* program translates surface syntax into a `PreTerm` value, which is an ordinary non-dependent
 type. The `PreTerm` is then passed to the verified type checker via the Agda-Haskell FFI.
+
+Development
+-----------
+
+To compile:
+`agda --compile -i src/ -i ~/opt/agda-stdlib/src/ --ghc-flag=-i/Users/larrytheliquid/opt/agda-stdlib/ffi src/Spire/Main.agda`
