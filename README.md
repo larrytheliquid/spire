@@ -12,7 +12,7 @@ larger universes indexed by their level in the universe hierarchy.
 Formally Verified
 -----------------
 
-A *Haskell* program translates the *Spire surface language* into the *Spire kernel language*.
+A *Haskell* program translates the user-facing *Spire surface language* into the *Spire kernel language*.
 This kernel language is formally verified in *Agda*, and proves the following properties:
 * type safety
 * strong normalization
