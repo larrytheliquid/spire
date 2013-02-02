@@ -223,6 +223,9 @@ compare (`Σ A B) (`Σ ._ B′) | just refl with compare B B′
 compare (`Σ A B) (`Σ ._ ._) | just refl | just refl = just refl
 compare (`Σ A B) (`Σ ._ B′) | just refl | nothing = nothing
 compare (`Σ A B) (`Σ A′ B′) | nothing = nothing
+compare (a `, b) (a′ `, b′) with compare a a′ | compare b b′
+... | just p | just q = nothing -- TODO just (cong₂ _`,_ p q)
+... | _ | _ = nothing
 compare _ _ = nothing
 
 ----------------------------------------------------------------------
@@ -285,7 +288,7 @@ check Γ ℓ .(`Σ A B) (a `, b) | just (A , B , refl) with check Γ ℓ A a
 check Γ ℓ .(`Σ A B) (._ `, b) | just (A , B , refl) | well a
   with check (extend Γ (suc ℓ) (λ vs → `⟦ eval A vs ⟧)) ℓ B b
 check Γ ℓ .(`Σ A B) (.(erase a) `, .(erase b)) | just (A , B , refl) | well a | well b
-  = {!well (a `, b)!}
+  = ill "TODO"
 check Γ ℓ .(`Σ A B) (.(erase a) `, b) | just (A , B , refl) | well a | ill msg = ill msg
 check Γ ℓ .(`Σ A B) (a `, b) | just (A , B , refl) | ill msg = ill msg
 check Γ ℓ X (a `, b) | nothing = ill "Checking a pair against a non-Σ."
