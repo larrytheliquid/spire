@@ -14,9 +14,9 @@ Formally Verified
 
 A *Haskell* program translates the user-facing *Spire surface language* into the *Spire kernel language*.
 This kernel language is formally verified in *Agda*, and proves the following properties:
-* type safety
-* strong normalization
-* correctness of type-checking
+* Type Safety
+* Strong Normalization
+* Correctness of Type Checking
 
 The *Haskell* program translates surface syntax into a `PreTerm` value, which is a normal non-dependent
 type. The `PreTerm` is then passed to the verified type checker via the Agda-Haskell FFI.
