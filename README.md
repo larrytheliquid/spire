@@ -1,8 +1,13 @@
 Spire
 =====
 
-*Spire* is a dependently typed programming language that supports writing **generic
-functions** over all types in the language.
+*Spire* is a formally verified dependently typed programming language that
+facilitates generic programming.
+
+Generic Programming
+-------------------
+
+*Spire* programs can contain **generic functions** over all types in the language.
 An eliminator for `Type` allows you to perform case analysis on all types in the
 language (at any universe level, in a predicative hierarchy of universes).
 In essence, the entire language is one big Martin-Löf universe.
