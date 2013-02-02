@@ -231,9 +231,8 @@ compare _ _ = nothing
 ----------------------------------------------------------------------
 
 data PreTerm : Set where
-  `Bool : PreTerm
+  `Bool `Type : PreTerm
   `Σ : PreTerm → PreTerm → PreTerm
-  `Type : PreTerm
   `true `false : PreTerm
   _`,_ : PreTerm → PreTerm → PreTerm
 
@@ -262,6 +261,10 @@ check Γ zero X `Bool = ill "Bool is not a value in universe level 0."
 check Γ (suc ℓ) X `Bool with compare X `Type
 check Γ (suc ℓ) ._ `Bool | just refl = well `Bool
 check Γ (suc ℓ) X `Bool | nothing = ill "fail"
+check Γ (suc ℓ) X `Type with compare X `Type
+check Γ (suc ℓ) ._ `Type | just refl = well `Type
+check Γ (suc ℓ) X `Type | nothing = ill "fail"
+check Γ zero X `Type = ill "Type is not a value in universe level 0."
 check Γ (suc ℓ) X (`Σ A B) with check Γ (suc ℓ) `Type A
 check Γ (suc ℓ) X (`Σ ._ B) | well A
   with check (extend Γ (suc ℓ) (λ vs → `⟦ eval A vs ⟧)) (suc ℓ) `Type B
@@ -273,10 +276,6 @@ check Γ (suc ℓ) X (`Σ ._ ._) | well A | well B | nothing =
 check Γ (suc ℓ) X (`Σ ._ B) | well A | ill msg = ill msg
 check Γ (suc ℓ) X (`Σ A B) | ill msg = ill msg
 check Γ zero X (`Σ A B) = ill "fail"
-check Γ (suc ℓ) X `Type with compare X `Type
-check Γ (suc ℓ) ._ `Type | just refl = well `Type
-check Γ (suc ℓ) X `Type | nothing = ill "fail"
-check Γ zero X `Type = ill "Type is not a value in universe level 0."
 check Γ ℓ X `true with compare X `Bool
 check Γ ℓ ._ `true | just refl = well `true
 check Γ ℓ X `true | nothing = ill "fail"
