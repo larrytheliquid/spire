@@ -30,11 +30,11 @@ Running
 -----------
 
 To compile:
-```bash
+```
 agda -c --compile-dir=. -isrc --ghc-flag=-isrc src/spire.agda
 ```
 
 To run:
-```bash
+```
 ./spire
 ```
