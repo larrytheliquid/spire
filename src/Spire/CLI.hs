@@ -5,7 +5,6 @@ type TypeChecker = Int -> PreTerm -> PreTerm -> Bool
 
 run :: TypeChecker -> IO ()
 run isTyped = do
-  putStrLn "Warming up the type checker..."
   putStrLn $ "Enter universe level: "
   lv <- getLine
   putStrLn $ "Enter type: "

@@ -43,6 +43,15 @@ infix 4 _≅_
 data _≅_ {A : Set} (a : A) : {B : Set} → B → Set where
   refl : a ≅ a
 
+cong : ∀ {A : Set} {B : A → Set} {x y}
+       (f : (x : A) → B x) → x ≅ y → f x ≅ f y
+cong f refl = refl
+
+cong₂ : ∀ {A : Set} {B : A → Set} {C : ∀ x → B x → Set}
+          {x y u v}
+        (f : (x : A) (y : B x) → C x y) → x ≅ y → u ≅ v → f x u ≅ f y v
+cong₂ f refl refl = refl
+
 ----------------------------------------------------------------------
 
 data ℕ : Set where
