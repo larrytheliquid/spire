@@ -85,6 +85,17 @@ data List (A : Set) : Set where
 
 ----------------------------------------------------------------------
 
+postulate Int : Set
+{-# BUILTIN INTEGER Int #-}
+{-# COMPILED_TYPE Int Int #-}
+
+private
+  primitive primIntegerAbs : Int → ℕ
+
+abs = primIntegerAbs
+
+----------------------------------------------------------------------
+
 postulate String : Set
 {-# BUILTIN STRING String #-}
 {-# COMPILED_TYPE String String #-}
@@ -95,11 +106,9 @@ private
   primStringEquality : String → String → Bool
 
 infixr 5 _++_
-_++_ : String → String → String
 _++_ = primStringAppend
 
 infix 4 _==_
-_==_ : String → String → Bool
 _==_ = primStringEquality
 
 ----------------------------------------------------------------------

@@ -70,12 +70,15 @@ check Γ ℓ X (a `, b) | nothing = ill "Checking a pair against a non-Σ."
 ----------------------------------------------------------------------
 
 checkClosed = check ∅
-checkerLevel = 3
 
-isTyped : PreTerm → PreTerm → Bool
-isTyped A a with checkClosed (suc checkerLevel) `Type A
-isTyped ._ a | well A with checkClosed checkerLevel A a
-isTyped .(erase A) .(erase a) | well A | well a = true
-isTyped .(erase A) a | well A | ill msg = false
-isTyped A a | ill msg = false
+isTyped′ : (ℓ : ℕ) (A a : PreTerm) → Bool
+isTyped′ ℓ A a with checkClosed (suc ℓ) `Type A
+isTyped′ ℓ ._ a | well A with checkClosed ℓ A a
+isTyped′ ℓ .(erase A) .(erase a) | well A | well a = true
+isTyped′ ℓ .(erase A) a | well A | ill msg = false
+isTyped′ ℓ A a | ill msg = false
+
+TypeChecker = (ℓ : Int) (A a : PreTerm) → Bool
+isTyped : TypeChecker
+isTyped i = isTyped′ (abs i)
 
