@@ -1,5 +1,8 @@
 module Spire.SurfaceTerm where
 
+data Nat = Zero | Succ Nat
+  deriving ( Eq, Show, Read)
+
 data PreTerm =
     Bool | Type
   | Sg PreTerm PreTerm

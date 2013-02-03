@@ -1,5 +1,5 @@
 module Spire.Prelude where
-{-# IMPORT Spire.FFI #-}
+{-# IMPORT Spire.SurfaceTerm #-}
 
 ----------------------------------------------------------------------
 
@@ -49,7 +49,7 @@ data ℕ : Set where
   zero : ℕ
   suc : (n : ℕ) → ℕ
 
-{-# COMPILED_DATA ℕ Spire.FFI.Nat Spire.FFI.Zero Spire.FFI.Succ #-}
+{-# COMPILED_DATA ℕ Spire.SurfaceTerm.Nat Spire.SurfaceTerm.Zero Spire.SurfaceTerm.Succ #-}
 {-# BUILTIN NATURAL ℕ    #-}
 {-# BUILTIN ZERO    zero #-}
 {-# BUILTIN SUC     suc  #-}
