@@ -5,6 +5,5 @@ data PreTerm =
   | Sg PreTerm PreTerm
   | True | False
   | Pair PreTerm PreTerm
-
-
+  deriving ( Eq, Show, Read )
 
