@@ -1,12 +1,4 @@
-open import Data.Empty
-open import Data.Unit hiding ( _≟_ )
-open import Data.Bool hiding ( _≟_ )
-open import Data.Nat hiding ( compare ) renaming ( _≟_ to _≟ℕ_ )
-open import Data.String hiding ( _≟_ )
-open import Data.Product
-open import Data.Maybe
-open import Function
-open import Relation.Binary.HeterogeneousEquality
+open import Spire.Prelude
 open import Spire.Type
 open import Spire.Term
 module Spire.PreTerm where

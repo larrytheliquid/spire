@@ -1,6 +1,4 @@
-open import Foreign.Haskell
-open import IO.Primitive
-open import Data.Bool
+open import Spire.Prelude
 open import Spire.PreTerm
 module spire where
 

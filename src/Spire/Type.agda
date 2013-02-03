@@ -1,20 +1,5 @@
-open import Data.Empty
-open import Data.Unit
-open import Data.Bool
-open import Data.Nat
-open import Data.String
-open import Data.Product
-open import Data.Maybe
-open import Function
+open import Spire.Prelude
 module Spire.Type where
-
-----------------------------------------------------------------------
-
-record Universe : Set₁ where
-  field
-    Codes : Set
-    Meaning : Codes → Set
-open Universe
 
 ----------------------------------------------------------------------
 
