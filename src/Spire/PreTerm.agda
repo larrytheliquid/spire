@@ -71,14 +71,14 @@ check Γ ℓ X (a `, b) | nothing = ill "Checking a pair against a non-Σ."
 
 checkClosed = check ∅
 
-isTyped′ : (ℓ : ℕ) (A a : PreTerm) → Bool
+isTyped′ : (ℓ : ℕ) (A a : PreTerm) → Maybe String
 isTyped′ ℓ A a with checkClosed (suc ℓ) `Type A
 isTyped′ ℓ ._ a | well A with checkClosed ℓ A a
-isTyped′ ℓ .(erase A) .(erase a) | well A | well a = true
-isTyped′ ℓ .(erase A) a | well A | ill msg = false
-isTyped′ ℓ A a | ill msg = false
+isTyped′ ℓ .(erase A) .(erase a) | well A | well a = nothing
+isTyped′ ℓ .(erase A) a | well A | ill msg = just msg
+isTyped′ ℓ A a | ill msg = just msg
 
-TypeChecker = (ℓ : Int) (A a : PreTerm) → Bool
+TypeChecker = (ℓ : Int) (A a : PreTerm) → Maybe String
 isTyped : TypeChecker
 isTyped i = isTyped′ (abs i)
 

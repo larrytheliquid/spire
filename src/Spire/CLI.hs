@@ -1,7 +1,7 @@
 module Spire.CLI where
 import Spire.SurfaceTerm as T
 
-type TypeChecker = Int -> PreTerm -> PreTerm -> Bool
+type TypeChecker = Int -> PreTerm -> PreTerm -> Maybe String
 
 run :: TypeChecker -> IO ()
 run isTyped = do
@@ -11,7 +11,7 @@ run isTyped = do
   tp <- getLine
   putStrLn $ "Enter term: "
   tm <- getLine
-  if isTyped (read lv) (read tp) (read tm)
-     then putStrLn "Well typed!"
-     else putStrLn "Ill typed!"
+  case isTyped (read lv) (read tp) (read tm) of
+     Nothing -> putStrLn "Well typed!"
+     Just error -> putStrLn "Ill typed!" >> putStrLn error
 
