@@ -1,12 +1,12 @@
 open import Spire.Prelude
-open import Spire.PreTerm
+open import Spire.PreValue
 module spire where
 
-postulate run : TypeChecker → IO Unit
+postulate run : CanonicalTypeChecker → IO Unit
 {-# IMPORT Spire.CLI #-}
 {-# COMPILED run Spire.CLI.run #-}
 
 main : IO Unit
-main = run isTyped
+main = run typeCheckCanonical
 
 

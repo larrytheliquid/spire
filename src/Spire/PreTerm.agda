@@ -11,11 +11,6 @@ data PreTerm : Set where
   `true `false : PreTerm
   _`,_ : PreTerm → PreTerm → PreTerm
 
-{-# IMPORT Spire.SurfaceTerm #-}
-{-# COMPILED_DATA PreTerm Spire.SurfaceTerm.PreTerm
-  Spire.SurfaceTerm.Bool Spire.SurfaceTerm.Type Spire.SurfaceTerm.Sg
-  Spire.SurfaceTerm.True Spire.SurfaceTerm.False Spire.SurfaceTerm.Pair #-}
-
 erase : ∀{Γ ℓ Τ} → Term Γ ℓ Τ → PreTerm
 erase `Bool = `Bool
 erase (`Σ A B) = `Σ (erase A) (erase B)

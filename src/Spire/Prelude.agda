@@ -135,3 +135,12 @@ const : {A B : Set} → A → B → A
 const x = λ _ → x
 
 ----------------------------------------------------------------------
+
+data CheckResult (A : Set) : Set where
+  well : CheckResult A
+  ill : A → String → CheckResult A
+{-# COMPILED_DATA CheckResult Spire.SurfaceTerm.CheckResult
+  Spire.SurfaceTerm.Well Spire.SurfaceTerm.Ill
+  #-}
+
+----------------------------------------------------------------------
