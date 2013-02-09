@@ -62,14 +62,20 @@ check Γ `Type (`Π A B) | well (`type A′) with check (`extend Γ A′) `Type 
 check Γ `Type (`Π A B) | well (`type A′) | well (`type B′) = well (`type (`Π A′ B′))
 check Γ `Type (`Π A B) | well (`type A′) | well (`neutral B′) = well (`type (`Π A′ (`neutral B′)))
 check Γ `Type (`Π A B) | well (`type A′) | ill x msg = ill x msg
-check Γ `Type (`Π A B) | well (`neutral n) = ill `tt "TODO"
+check Γ `Type (`Π A B) | well (`neutral A′) with check (`extend Γ (`neutral A′)) `Type B
+check Γ `Type (`Π A B) | well (`neutral A′) | well (`type B′) = well (`type (`Π (`neutral A′) B′))
+check Γ `Type (`Π A B) | well (`neutral A′) | well (`neutral B′) = well (`type (`Π (`neutral A′) (`neutral B′)))
+check Γ `Type (`Π A B) | well (`neutral A′) | ill x msg = ill x msg
 check Γ `Type (`Π A B) | ill x msg = ill x msg
 check Γ `Type (`Σ A B) with check Γ `Type A
 check Γ `Type (`Σ A B) | well (`type A′) with check (`extend Γ A′) `Type B
 check Γ `Type (`Σ A B) | well (`type A′) | well (`type B′) = well (`type (`Σ A′ B′))
-check Γ `Type (`Σ A B) | well (`type A′) | well (`neutral n) = ill `tt "TODO"
+check Γ `Type (`Σ A B) | well (`type A′) | well (`neutral B′) = well (`type (`Σ A′ (`neutral B′)))
 check Γ `Type (`Σ A B) | well (`type A′) | ill x msg = ill x msg
-check Γ `Type (`Σ A B) | well (`neutral n) = ill `tt "TODO"
+check Γ `Type (`Σ A B) | well (`neutral A′) with check (`extend Γ (`neutral A′)) `Type B
+check Γ `Type (`Σ A B) | well (`neutral A′) | well (`type B′) = well (`type (`Σ (`neutral A′) B′))
+check Γ `Type (`Σ A B) | well (`neutral A′) | well (`neutral B′) = well (`type (`Σ (`neutral A′) (`neutral B′)))
+check Γ `Type (`Σ A B) | well (`neutral A′) | ill x msg = ill x msg
 check Γ `Type (`Σ A B) | ill x msg = ill x msg
 -- TODO check Γ `Type (`neutral n) = ?
 check Γ `Type x = ill x "does not have type Type."
