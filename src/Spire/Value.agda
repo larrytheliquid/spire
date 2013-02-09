@@ -46,5 +46,37 @@ data Neutral Γ where
     → Value Γ A
     → Neutral Γ A
 
-
 ----------------------------------------------------------------------
+
+compareType : ∀{Γ} → (A B : Type Γ) → Maybe (A ≡ B)
+compareNeutral : ∀{Γ} {A : Type Γ} → (a b : Neutral Γ A) → Maybe (a ≡ b)
+compare : ∀{Γ} {A : Type Γ} → (a b : Value Γ A) → Maybe (a ≡ b)
+
+compareType `⊤ `⊤ = just refl
+compareType `Bool `Bool = just refl
+compareType `Type `Type = just refl
+compareType (`neutral A) (`neutral A′) = cong `neutral <$> compareNeutral A A′
+compareType (`Π A B) (`Π A′ B′) with compareType A A′
+compareType (`Π A B) (`Π .A B′) | just refl with compareType B B′
+compareType (`Π A B) (`Π .A .B) | just refl | just refl = just refl
+compareType (`Π A B) (`Π .A B′) | just refl | nothing = nothing
+compareType (`Π A B) (`Π A′ B′) | nothing = nothing
+compareType (`Σ A B) (`Σ A′ B′) with compareType A A′
+compareType (`Σ A B) (`Σ .A B′) | just refl with compareType B B′
+compareType (`Σ A B) (`Σ .A .B) | just refl | just refl = just refl
+compareType (`Σ A B) (`Σ .A B′) | just refl | nothing = nothing
+compareType (`Σ A B) (`Σ A′ B′) | nothing = nothing
+compareType (`const A) (`const A′) = cong `const <$> compareType A A′
+compareType _ _ = nothing
+
+compareNeutral (`if b then c₁ else c₂) (`if b′ then c₁′ else c₂′) =
+  cong₃ `if_then_else_ <$> compareNeutral b b′ <*> compare c₁ c₁′ <*> compare c₂ c₂′
+
+compare (`neutral a) (`neutral a′) = cong `neutral <$> compareNeutral a a′
+compare (`type A) (`type A′) = cong `type <$> compareType A A′
+compare `tt `tt = just refl
+compare `true `true = just refl
+compare `false `false = just refl
+compare (`λ a) (`λ a′) = cong `λ <$> compare a a′
+compare (a `, b) (a′ `, b′) = cong₂ _`,_ <$> compare a a′ <*> compare b b′
+compare _ _ = nothing

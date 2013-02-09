@@ -19,6 +19,20 @@ data Maybe (A : Set) : Set where
   nothing : Maybe A
 {-# COMPILED_DATA Maybe Maybe Just Nothing #-}
 
+infixl 1 _<*>_
+_<*>_ : {A B : Set} → Maybe (A → B) → Maybe A → Maybe B
+just f <*> (just x) = just (f x)
+_ <*> _ = nothing
+
+infixl 1 _>>=_
+_>>=_ : {A B : Set} → Maybe A → (A → B) → Maybe B
+just x >>= f = just (f x)
+nothing >>= f = nothing
+
+infixl 1 _<$>_
+_<$>_ : {A B : Set} → (A → B) → Maybe A → Maybe B
+f <$> m = m >>= f
+
 ----------------------------------------------------------------------
 
 infixr 4 _,_
@@ -39,18 +53,20 @@ open Universe public
 
 ----------------------------------------------------------------------
 
-infix 4 _≅_
-data _≅_ {A : Set} (a : A) : {B : Set} → B → Set where
-  refl : a ≅ a
+infix 4 _≡_
+data _≡_ {A : Set} (x : A) : A → Set where
+  refl : x ≡ x
 
-cong : ∀ {A : Set} {B : A → Set} {x y}
-       (f : (x : A) → B x) → x ≅ y → f x ≅ f y
+cong : {A B : Set} {a a′ : A} (f : A → B) → a ≡ a′ → f a ≡ f a′
 cong f refl = refl
 
-cong₂ : ∀ {A : Set} {B : A → Set} {C : ∀ x → B x → Set}
-          {x y u v}
-        (f : (x : A) (y : B x) → C x y) → x ≅ y → u ≅ v → f x u ≅ f y v
+cong₂ : {A B C : Set} {a a′ : A} {b b′ : B}
+  (f : A → B → C) → a ≡ a′ → b ≡ b′ → f a b ≡ f a′ b′
 cong₂ f refl refl = refl
+
+cong₃ : {A B C D : Set} {a a′ : A} {b b′ : B} {c c′ : C}
+  (f : A → B → C → D) → a ≡ a′ → b ≡ b′ → c ≡ c′ → f a b c ≡ f a′ b′ c′
+cong₃ f refl refl refl = refl
 
 ----------------------------------------------------------------------
 
