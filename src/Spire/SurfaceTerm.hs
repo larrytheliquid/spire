@@ -12,6 +12,8 @@ data PreValue =
   | Vtt | Vtrue | Vfalse
   | Vlam PreValue
   | Vpair PreValue PreValue
+
+  | Vif PreValue PreValue
   deriving ( Eq, Show, Read )
 
 data CheckResult a = Well | Ill a String
