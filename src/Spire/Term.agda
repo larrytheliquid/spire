@@ -99,26 +99,3 @@ eval (e `, e′) vs = eval e vs , eval e′ vs
 
 ----------------------------------------------------------------------
 
-compare : ∀{Γ ℓ A B} (a : Term Γ ℓ A) (b : Term Γ ℓ B) → Maybe (a ≅ b)
-compare `Bool `Bool = just refl
-compare `Type `Type = just refl
-compare `true `true = just refl
-compare `false `false = just refl
-compare (`Σ A B) (`Σ A′ B′) with compare A A′
-compare (`Σ A B) (`Σ ._ B′) | just refl with compare B B′
-compare (`Σ A B) (`Σ ._ ._) | just refl | just refl = just refl
-compare (`Σ A B) (`Σ ._ B′) | just refl | nothing = nothing
-compare (`Σ A B) (`Σ A′ B′) | nothing = nothing
-compare (a `, b) (a′ `, b′) with compare a a′ | compare b b′
-... | just p | just q = nothing -- TODO just (cong₂ _`,_ p q)
-... | _ | _ = nothing
-compare _ _ = nothing
-
-isΣ : ∀{Γ ℓ Τ} (X : Term Γ (suc ℓ) Τ) → Maybe (Σ (Term Γ (suc ℓ) (const `Type))
-  (λ A → Σ (Term (extend Γ (suc ℓ)  λ vs →
-      `⟦ eval A vs ⟧) (suc ℓ) (const `Type))
-     (λ B → _≅_ X {B = Term Γ (suc ℓ) (const `Type)} (`Σ A B))))
-isΣ (`Σ A B) = just (A , B , refl)
-isΣ X = nothing
-
-----------------------------------------------------------------------
