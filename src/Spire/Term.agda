@@ -31,26 +31,15 @@ ScopedType₂ Γ ℓ Τ = (vs : Environment Γ) → ⟦ ℓ ∣ Τ vs ⟧ → Ty
 
 ----------------------------------------------------------------------
 
+data TermType (Γ : Context) : (ℓ : ℕ) → Set
 data Term (Γ : Context) : (ℓ : ℕ)
   → ScopedType Γ ℓ → Set
 eval : ∀{Γ ℓ Τ} → Term Γ ℓ Τ
   → (vs : Environment Γ) → ⟦ ℓ ∣ Τ vs ⟧
 
 data Term Γ where
-  {- Type Formation -}
-  `Bool : ∀{ℓ}
-    → Term Γ (suc ℓ) (const `Type)
-  `Σ : ∀{ℓ}
-    (A : Term Γ (suc ℓ) (const `Type))
-    (B : Term (extend Γ (suc ℓ)  λ vs →
-      `⟦ eval A vs ⟧) (suc ℓ) (const `Type))
-    → Term Γ (suc ℓ) (const `Type)
-  `Type : ∀{ℓ} → Term Γ (suc ℓ) (const `Type)
-  -- `⟦_⟧ : ∀{ℓ}
-  --   → Term Γ ℓ (const `Type)
-  --   → Term Γ (suc ℓ) (const `Type)
+  `type : ∀{ℓ} → TermType Γ ℓ → Term Γ ℓ (const `Type)
 
-  {- Value Introduction -}
   -- `lift : ∀{ℓ Τ} (e : Term Γ ℓ Τ)
   --  → Term Γ (suc ℓ) λ vs → `⟦ Τ vs ⟧
   `true `false : ∀{ℓ} → Term Γ ℓ (const `Bool)
@@ -59,7 +48,6 @@ data Term Γ where
    (e′ : Term Γ ℓ λ vs → Τ′ vs (eval e vs))
    → Term Γ ℓ λ vs → `Σ (Τ vs) λ v → Τ′ vs v
 
-  {- Value Elimination -}
   -- `lower : ∀{ℓ Τ}
   --   (e : Term Γ (suc ℓ) λ vs → `⟦ Τ vs ⟧)
   --   → Term Γ ℓ Τ
@@ -78,10 +66,23 @@ data Term Γ where
   --   (e : Term Γ ℓ (λ vs → `Σ (Τ vs) (Τ′ vs)))
   --   → Term Γ ℓ λ vs → Τ′ vs (proj₁ (eval e vs))
 
+data TermType Γ where
+  `Bool : ∀{ℓ}
+    → TermType Γ (suc ℓ)
+  `Σ : ∀{ℓ}
+    (A : TermType Γ (suc ℓ))
+    (B : TermType (extend Γ (suc ℓ)  λ vs →
+      `⟦ eval (`type A) vs ⟧) (suc ℓ))
+    → TermType Γ (suc ℓ)
+  `Type : ∀{ℓ} → TermType Γ (suc ℓ)
+  -- `⟦_⟧ : ∀{ℓ}
+  --   → Term Γ ℓ (const `Type)
+  --   → Term Γ (suc ℓ) (const `Type)
+
 {- Type Formation -}
-eval `Bool vs = `Bool
-eval (`Σ A B) vs = `Σ (eval A vs) λ v → eval B (vs , v)
-eval `Type vs = `Type
+eval (`type `Bool) vs = `Bool
+eval (`type (`Σ A B)) vs = `Σ (eval (`type A) vs) λ v → eval (`type B) (vs , v)
+eval (`type `Type) vs = `Type
 -- eval `⟦ A ⟧ vs = `⟦ eval A vs ⟧
 
 {- Value Introduction -}
