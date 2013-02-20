@@ -6,6 +6,13 @@ module Spire.PreTerm where
 
 ----------------------------------------------------------------------
 
+compare : ∀ Γ ℓ (A B : ScopedType Γ ℓ) → Maybe (A ≡ B)
+compare Γ ℓ A B with A ≟ B
+compare Γ ℓ A B | yes p = just p
+compare Γ ℓ A B | no _ = nothing
+
+----------------------------------------------------------------------
+
 data PreTerm : Set where
   `Bool `Type : PreTerm
   `Σ : PreTerm → PreTerm → PreTerm
@@ -27,24 +34,29 @@ erase (a `, b) = erase a `, erase b
 
 ----------------------------------------------------------------------
 
-compare : ∀ Γ ℓ (A B : ScopedType Γ ℓ) → Maybe (A ≡ B)
-compare Γ ℓ A B with A ≟ B
-compare Γ ℓ A B | yes p = just p
-compare Γ ℓ A B | no _ = nothing
+`ScopedType : ∀{Γ ℓ} → ScopedType Γ ℓ
+`ScopedType {Γ} {ℓ} = eval {Γ} {suc ℓ} `Type
+
+----------------------------------------------------------------------
 
 data Check (Γ : Context) (ℓ : ℕ) (A : ScopedType Γ ℓ) : PreTerm → Set where
   well :  (e : Term Γ ℓ A) → Check Γ ℓ A (erase e)
-  ill : (v : PreTerm) (msg : String) → Check Γ ℓ A v
+  ill : ∀{v} → PreTerm → (msg : String) → Check Γ ℓ A v
 
-check : (Γ : Context) (ℓ : ℕ) (A : ScopedType Γ ℓ) (v : PreTerm)
-  → Check Γ ℓ A v
-check Γ ℓ A v with compare Γ ℓ A (const `Type)
-check Γ (suc ℓ) A `Bool | just p rewrite p = well `Bool
-check Γ ℓ A `Type | just p = {!!}
-check Γ ℓ A (`Σ v v₁) | just p = {!!}
-check Γ zero A v | just p = {!!}
-check Γ ℓ A v | just p = ill v "is not a Type."
-check Γ ℓ A v | nothing = {!!}
+check : (Γ : Context) (ℓ : ℕ) (T : ScopedType Γ ℓ) (v : PreTerm)
+  → Check Γ ℓ T v
+check Γ ℓ T v with compare Γ ℓ T (const `Type)
+check Γ (suc ℓ) T `Bool | just p rewrite p = well `Bool
+check Γ (suc ℓ) T `Type | just p rewrite p = well `Type
+check Γ (suc ℓ) T (`Σ A B) | just p with check Γ (suc ℓ) (const `Type) A
+check Γ (suc ℓ) T (`Σ ._ B) | just p | well A
+  with check (extend Γ (suc ℓ)  λ vs → `⟦ eval A vs ⟧) (suc ℓ) (const `Type) B
+check Γ (suc ℓ) T (`Σ ._ ._) | just p | well A | well B rewrite p = well (`Σ A B)
+check Γ (suc ℓ) T (`Σ ._ B) | just p | well A | ill X msg = ill X msg
+check Γ (suc ℓ) T (`Σ A B) | just p | ill X msg = ill X msg
+check Γ zero T A | just p = ill A "is not a value in universe level 0."
+check Γ ℓ T a | just p = ill a "is not a Type."
+check Γ ℓ T v | nothing = {!!}
 
 -- check Γ zero X `Bool = ill "Bool is not a value in universe level 0."
 -- check Γ (suc ℓ) X `Bool with compare X `Type
