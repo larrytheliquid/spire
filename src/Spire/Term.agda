@@ -47,6 +47,9 @@ data Term Γ where
    (e : Term Γ ℓ Τ)
    (e′ : Term Γ ℓ λ vs → Τ′ vs (eval e vs))
    → Term Γ ℓ λ vs → `Σ (Τ vs) λ v → Τ′ vs v
+  `λ : ∀{ℓ Τ} {Τ′ : ScopedType₂ Γ ℓ Τ}
+    → Term (extend Γ ℓ Τ) ℓ (uncurry Τ′)
+    → Term Γ ℓ λ vs → `Π (Τ vs) λ v → (Τ′ vs v)
 
   -- `lower : ∀{ℓ Τ}
   --   (e : Term Γ (suc ℓ) λ vs → `⟦ Τ vs ⟧)
@@ -88,7 +91,8 @@ eval (`type `Type) vs = `Type
 {- Value Introduction -}
 eval `true vs = true
 eval `false vs = false
-eval (e `, e′) vs = eval e vs , eval e′ vs
+eval (a `, b) vs = eval a vs , eval b vs
+eval (`λ f) vs = λ a → eval f (vs , a)
 
 {- Value Elimination -}
 -- eval (`lower e) vs = eval e vs

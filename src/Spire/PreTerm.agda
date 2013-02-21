@@ -31,6 +31,7 @@ erase (`type `Type) = `Type
 erase `true = `true
 erase `false = `false
 erase (a `, b) = erase a `, erase b
+erase (`λ f) = {!!}
 
 ----------------------------------------------------------------------
 
@@ -62,8 +63,9 @@ check : (Γ : Context) (ℓ : ℕ) (T : TermType Γ (suc ℓ)) (v : PreTerm)
 check Γ ℓ `Bool `true = well `true
 check Γ ℓ `Bool `false = well `false
 check Γ ℓ (`Σ A B) (a `, b) with check Γ ℓ A a
-check Γ ℓ (`Σ A B) (._ `, b) | well a with check Γ ℓ {!!} b
+check Γ ℓ (`Σ A B) (._ `, b) | well a with λ vs → eval (`type B) (vs , eval a vs)
 ... | ih = {!!}
+ -- check Γ ℓ {!!} b
 check Γ ℓ (`Σ A B) (a `, b) | ill X msg = ill X msg
 check Γ ℓ `Type A with checkType Γ ℓ A
 check Γ ℓ `Type ._ | well A = well (`type A)
