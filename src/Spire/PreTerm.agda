@@ -1,6 +1,7 @@
 open import Spire.Prelude
 open import Spire.Term
 module Spire.PreTerm where
+{-# IMPORT Spire.SurfaceTerm #-}
 
 ----------------------------------------------------------------------
 
@@ -36,12 +37,11 @@ data PreTerm : Set where
   `tt `true `false : PreTerm
   `if_then_else_ : (b c₁ c₂ : PreTerm) → PreTerm
 
-{-
-{-# IMPORT Spire.SurfaceTerm #-}
-{-# COMPILED_DATA PreTerm Spire.SurfaceTerm.PreTerm
-  Spire.SurfaceTerm.Bool Spire.SurfaceTerm.Type Spire.SurfaceTerm.Sg
-  Spire.SurfaceTerm.True Spire.SurfaceTerm.False Spire.SurfaceTerm.Pair #-}
--}
+{-# COMPILED_DATA PreTerm Spire.SurfaceTerm.Term
+  Spire.SurfaceTerm.Var Spire.SurfaceTerm.TT
+  Spire.SurfaceTerm.True Spire.SurfaceTerm.False
+  Spire.SurfaceTerm.If
+#-}
 
 erase : ∀{Γ A} → Term Γ A → PreTerm
 erase (`var i) = `var (index i)
@@ -90,9 +90,9 @@ check Γ `Bool x = ill x "does not have type Bool."
 checkClosed = check ∅
 
 TypeChecker = (A : Type) (a : PreTerm) → PreTerm ⊎ (PreTerm × String)
-typeCheck : TypeChecker
-typeCheck A a with checkClosed A a
-typeCheck A .(erase a) | well a = inj₁ (erase (embV (eval a)))
-typeCheck A a | ill x msg = inj₂ (x , msg)
+checkType : TypeChecker
+checkType A a with checkClosed A a
+checkType A .(erase a) | well a = inj₁ (erase (embV (eval a)))
+checkType A a | ill x msg = inj₂ (x , msg)
 
 

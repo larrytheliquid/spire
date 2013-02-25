@@ -71,7 +71,9 @@ data ℕ : Set where
   zero : ℕ
   suc : (n : ℕ) → ℕ
 
-{-# COMPILED_DATA ℕ Spire.SurfaceTerm.Nat Spire.SurfaceTerm.Zero Spire.SurfaceTerm.Succ #-}
+{-# COMPILED_DATA ℕ Spire.SurfaceTerm.Nat
+  Spire.SurfaceTerm.Zero Spire.SurfaceTerm.Succ
+#-}
 {-# BUILTIN NATURAL ℕ    #-}
 {-# BUILTIN ZERO    zero #-}
 {-# BUILTIN SUC     suc  #-}

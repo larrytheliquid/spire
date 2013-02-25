@@ -1,9 +1,13 @@
 module Spire.Term where
+{-# IMPORT Spire.SurfaceTerm #-}
 
 ----------------------------------------------------------------------
 
 data Type : Set where
   `⊤ `Bool : Type
+{-# COMPILED_DATA Type Spire.SurfaceTerm.Type
+  Spire.SurfaceTerm.Unit Spire.SurfaceTerm.Bool
+#-}
 
 infixl 3 _,_
 data Con : Set where

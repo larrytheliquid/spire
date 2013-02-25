@@ -3,10 +3,12 @@ module Spire.SurfaceTerm where
 data Nat = Zero | Succ Nat
   deriving ( Eq, Show, Read)
 
-data PreTerm =
-    Bool | Type
-  | Sg PreTerm PreTerm
-  | True | False
-  | Pair PreTerm PreTerm
+data Type = Unit | Bool
+  deriving ( Eq, Show, Read )
+
+data Term =
+    Var Nat
+  | TT | True | False
+  | If Term Term Term
   deriving ( Eq, Show, Read )
 

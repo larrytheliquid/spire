@@ -7,6 +7,6 @@ postulate run : TypeChecker → IO Unit
 {-# COMPILED run Spire.CLI.run #-}
 
 main : IO Unit
-main = run isTyped
+main = run checkType
 
 
