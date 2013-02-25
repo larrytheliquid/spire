@@ -21,6 +21,19 @@ data Maybe (A : Set) : Set where
 
 ----------------------------------------------------------------------
 
+data _⊎_ (A B : Set) : Set where
+  inj₁ : A → A ⊎ B
+  inj₂ : B → A ⊎ B
+{-# COMPILED_DATA _⊎_ Either Left Right #-}
+
+----------------------------------------------------------------------
+
+data _×_ (A B : Set) : Set where
+  _,_ : (a : A) (b : B) → A × B
+{-# COMPILED_DATA _×_ (,) (,) #-}
+
+----------------------------------------------------------------------
+
 infixr 4 _,_
 record Σ (A : Set) (B : A → Set) : Set where
   constructor _,_

@@ -1,84 +1,98 @@
 open import Spire.Prelude
-open import Spire.Type
 open import Spire.Term
 module Spire.PreTerm where
 
 ----------------------------------------------------------------------
 
-data PreTerm : Set where
-  `Bool `Type : PreTerm
-  `Σ : PreTerm → PreTerm → PreTerm
-  `true `false : PreTerm
-  _`,_ : PreTerm → PreTerm → PreTerm
+data Equal {A : Set} : A → A → Set where
+  yes : {a : A} → Equal a a
+  no : {a b : A} → Equal a b
 
+----------------------------------------------------------------------
+
+index : ∀{Γ A} → Var Γ A → ℕ
+index here = zero
+index (there i) = suc (index i)
+
+length : Con → ℕ
+length ∅ = zero
+length (Γ , A) = suc (length Γ)
+
+data Lookup (Γ : Con) : ℕ → Set where
+  inside : (A : Type) (i : Var Γ A) → Lookup Γ (index i)
+  outside : (n : ℕ) → Lookup Γ (length Γ + n)
+
+lookup : (Γ : Con) (n : ℕ) → Lookup Γ n
+lookup ∅ n = outside n
+lookup (Γ , A) zero = inside A here
+lookup (Γ , A) (suc n) with lookup Γ n
+lookup (Γ , B) (suc .(index i)) | inside A i = inside A (there i)
+lookup (Γ , B) (suc .(length Γ + n)) | outside n = outside n
+
+----------------------------------------------------------------------
+
+data PreTerm : Set where
+  `var : ℕ → PreTerm
+  `tt `true `false : PreTerm
+  `if_then_else_ : (b c₁ c₂ : PreTerm) → PreTerm
+
+{-
 {-# IMPORT Spire.SurfaceTerm #-}
 {-# COMPILED_DATA PreTerm Spire.SurfaceTerm.PreTerm
   Spire.SurfaceTerm.Bool Spire.SurfaceTerm.Type Spire.SurfaceTerm.Sg
   Spire.SurfaceTerm.True Spire.SurfaceTerm.False Spire.SurfaceTerm.Pair #-}
+-}
 
-erase : ∀{Γ ℓ Τ} → Term Γ ℓ Τ → PreTerm
-erase `Bool = `Bool
-erase (`Σ A B) = `Σ (erase A) (erase B)
-erase `Type = `Type
+erase : ∀{Γ A} → Term Γ A → PreTerm
+erase (`var i) = `var (index i)
+erase `tt = `tt
 erase `true = `true
 erase `false = `false
-erase (a `, b) = erase a `, erase b
+erase (`if b then c₁ else c₂) = `if erase b then erase c₁ else erase c₂
 
 ----------------------------------------------------------------------
 
-data Check (Γ : Context) (ℓ : ℕ) (A : Term Γ (suc ℓ) (const `Type)) : PreTerm → Set where
-  well :  (e : Term Γ ℓ (eval A)) → Check Γ ℓ A (erase e)
-  ill : ∀{v} (msg : String) → Check Γ ℓ A v
+data Check (Γ : Con) (A : Type) : PreTerm → Set where
+  well :  (a : Term Γ A) → Check Γ A (erase a)
+  ill : ∀{a} (x : PreTerm) (msg : String) → Check Γ A a
 
-check : (Γ : Context) (ℓ : ℕ) (A : Term Γ (suc ℓ) (const `Type)) (v : PreTerm)
-  → Check Γ ℓ A v
-check Γ zero X `Bool = ill "Bool is not a value in universe level 0."
-check Γ (suc ℓ) X `Bool with compare X `Type
-check Γ (suc ℓ) ._ `Bool | just refl = well `Bool
-check Γ (suc ℓ) X `Bool | nothing = ill "fail"
-check Γ (suc ℓ) X `Type with compare X `Type
-check Γ (suc ℓ) ._ `Type | just refl = well `Type
-check Γ (suc ℓ) X `Type | nothing = ill "fail"
-check Γ zero X `Type = ill "Type is not a value in universe level 0."
-check Γ (suc ℓ) X (`Σ A B) with check Γ (suc ℓ) `Type A
-check Γ (suc ℓ) X (`Σ ._ B) | well A
-  with check (extend Γ (suc ℓ) (λ vs → `⟦ eval A vs ⟧)) (suc ℓ) `Type B
-check Γ (suc ℓ) X (`Σ ._ ._) | well A | well B with compare X `Type
-check Γ (suc ℓ) .`Type (`Σ ._ ._) | well A | well B | just refl
-  = well (`Σ A B)
-check Γ (suc ℓ) X (`Σ ._ ._) | well A | well B | nothing =
-  ill "Σ is not a value in universe level 0."
-check Γ (suc ℓ) X (`Σ ._ B) | well A | ill msg = ill msg
-check Γ (suc ℓ) X (`Σ A B) | ill msg = ill msg
-check Γ zero X (`Σ A B) = ill "fail"
-check Γ ℓ X `true with compare X `Bool
-check Γ ℓ ._ `true | just refl = well `true
-check Γ ℓ X `true | nothing = ill "fail"
-check Γ ℓ X `false with compare X `Bool
-check Γ ℓ ._ `false | just refl = well `false
-check Γ ℓ X `false | nothing = ill "fail"
-check Γ ℓ X (a `, b) with isΣ X
-check Γ ℓ .(`Σ A B) (a `, b) | just (A , B , refl) with check Γ ℓ A a
-check Γ ℓ .(`Σ A B) (._ `, b) | just (A , B , refl) | well a
-  with check (extend Γ (suc ℓ) (λ vs → `⟦ eval A vs ⟧)) ℓ B b
-check Γ ℓ .(`Σ A B) (.(erase a) `, .(erase b)) | just (A , B , refl) | well a | well b
-  = ill "TODO"
-check Γ ℓ .(`Σ A B) (.(erase a) `, b) | just (A , B , refl) | well a | ill msg = ill msg
-check Γ ℓ .(`Σ A B) (a `, b) | just (A , B , refl) | ill msg = ill msg
-check Γ ℓ X (a `, b) | nothing = ill "Checking a pair against a non-Σ."
+check : (Γ : Con) (A : Type) (a : PreTerm) → Check Γ A a
+check Γ `⊤ (`var i) with lookup Γ i
+check Γ `⊤ (`var .(index i)) | inside `⊤ i = well (`var i)
+check Γ `⊤ (`var .(index i)) | inside A i = ill (`var (index i)) "does not have type ⊤." 
+check Γ `⊤ (`var .(length Γ + n)) | outside n = ill (`var (length Γ + n)) "is not in the context."
+check Γ `⊤ `tt = well `tt
+check Γ `⊤ (`if b then c₁ else c₂) with check Γ `Bool b
+check Γ `⊤ (`if ._ then c₁ else c₂) | well b with check Γ `⊤ c₁
+check Γ `⊤ (`if ._ then ._ else c₂) | well b | well c₁ with check Γ `⊤ c₂
+check Γ `⊤ (`if ._ then ._ else ._) | well b | well c₁ | well c₂ = well (`if b then c₁ else c₂)
+check Γ `⊤ (`if ._ then ._ else c₂) | well b | well c₁ | ill x msg = ill x msg
+check Γ `⊤ (`if ._ then c₁ else c₂) | well b | ill x msg = ill x msg
+check Γ `⊤ (`if b then c₁ else c₂) | ill x msg = ill x msg
+check Γ `⊤ x = ill x "does not have type ⊤."
+check Γ `Bool (`var i) with lookup Γ i
+check Γ `Bool (`var .(index i)) | inside `Bool i = well (`var i)
+check Γ `Bool (`var .(index i)) | inside A i = ill (`var (index i)) "does not have type Bool." 
+check Γ `Bool (`var .(length Γ + n)) | outside n = ill (`var (length Γ + n)) "is not in the context."
+check Γ `Bool `true = well `true
+check Γ `Bool `false = well `false
+check Γ `Bool (`if b then c₁ else c₂) with check Γ `Bool b
+check Γ `Bool (`if ._ then c₁ else c₂) | well b with check Γ `Bool c₁
+check Γ `Bool (`if ._ then ._ else c₂) | well b | well c₁ with check Γ `Bool c₂
+check Γ `Bool (`if ._ then ._ else ._) | well b | well c₁ | well c₂ = well (`if b then c₁ else c₂)
+check Γ `Bool (`if ._ then ._ else c₂) | well b | well c₁ | ill x msg = ill x msg
+check Γ `Bool (`if ._ then c₁ else c₂) | well b | ill x msg = ill x msg
+check Γ `Bool (`if b then c₁ else c₂) | ill x msg = ill x msg
+check Γ `Bool x = ill x "does not have type Bool."
 
 ----------------------------------------------------------------------
 
 checkClosed = check ∅
 
-isTyped′ : (ℓ : ℕ) (A a : PreTerm) → Maybe String
-isTyped′ ℓ A a with checkClosed (suc ℓ) `Type A
-isTyped′ ℓ ._ a | well A with checkClosed ℓ A a
-isTyped′ ℓ .(erase A) .(erase a) | well A | well a = nothing
-isTyped′ ℓ .(erase A) a | well A | ill msg = just msg
-isTyped′ ℓ A a | ill msg = just msg
+TypeChecker = (A : Type) (a : PreTerm) → PreTerm ⊎ (PreTerm × String)
+typeCheck : TypeChecker
+typeCheck A a with checkClosed A a
+typeCheck A .(erase a) | well a = inj₁ (erase (embV (eval a)))
+typeCheck A a | ill x msg = inj₂ (x , msg)
 
-TypeChecker = (ℓ : Int) (A a : PreTerm) → Maybe String
-isTyped : TypeChecker
-isTyped i = isTyped′ (abs i)
 

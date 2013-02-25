@@ -1,124 +1,107 @@
-open import Spire.Prelude
-open import Spire.Type
 module Spire.Term where
 
 ----------------------------------------------------------------------
 
-data Context : Set
-Environment : Context → Set
+data Type : Set where
+  `⊤ `Bool : Type
 
-ScopedType : Context → ℕ → Set
-ScopedType Γ ℓ = Environment Γ → Type ℓ
+infixl 3 _,_
+data Con : Set where
+  ∅ : Con
+  _,_ : Con → Type → Con
 
-data Context where
-  ∅ : Context
-  extend : (Γ : Context) (ℓ : ℕ) (Τ : ScopedType Γ ℓ) → Context
+data Var : Con → Type → Set where
+  here : ∀{Γ A} → Var (Γ , A) A
+  there : ∀{Γ A B} → Var Γ A → Var (Γ , B) A
 
-Environment ∅ = ⊤
-Environment (extend Γ ℓ Τ) = Σ (Environment Γ) λ vs → ⟦ ℓ ∣ Τ vs ⟧
+_-_ : ∀{A} (Γ : Con) → Var Γ A → Con
+∅ - ()
+(Γ , A) - here = Γ
+(Γ , A) - there i = Γ - i , A
 
-data InContext :  (Γ : Context) (ℓ : ℕ) (Τ : ScopedType Γ ℓ) → Set where
- here : ∀{Γ ℓ Τ} → InContext (extend Γ ℓ Τ) ℓ λ vs → Τ (proj₁ vs)
- there : ∀{Γ ℓ Τ ℓ′} {Τ′ : ScopedType Γ ℓ′}
-   → InContext Γ ℓ Τ → InContext (extend Γ ℓ′ Τ′) ℓ λ vs → Τ (proj₁ vs)
+wknV : ∀{Γ A B} (i : Var Γ A) → Var (Γ - i) B → Var Γ B
+wknV here j = there j
+wknV (there i) here = here
+wknV (there i) (there j) = there (wknV i j)
 
-lookup : ∀{Γ ℓ Τ} → InContext Γ ℓ Τ → (vs : Environment Γ) → ⟦ ℓ ∣ Τ vs ⟧
-lookup here (vs , v) = v
-lookup (there p) (vs , v) = lookup p vs
+data Compare {Γ} : {A B : Type} → Var Γ A → Var Γ B → Set where
+  equal : ∀{A} {i : Var Γ A} → Compare i i
+  diff : ∀{A B} (i : Var Γ A) (j : Var (Γ - i) B) → Compare i (wknV i j)
 
-ScopedType₂ : (Γ : Context) (ℓ : ℕ) → ScopedType Γ ℓ → Set
-ScopedType₂ Γ ℓ Τ = (vs : Environment Γ) → ⟦ ℓ ∣ Τ vs ⟧ → Type ℓ
-
-----------------------------------------------------------------------
-
-data Term (Γ : Context) : (ℓ : ℕ)
-  → ScopedType Γ ℓ → Set
-eval : ∀{Γ ℓ Τ} → Term Γ ℓ Τ
-  → (vs : Environment Γ) → ⟦ ℓ ∣ Τ vs ⟧
-
-data Term Γ where
-  {- Type Formation -}
-  `Bool : ∀{ℓ}
-    → Term Γ (suc ℓ) (const `Type)
-  `Σ : ∀{ℓ}
-    (A : Term Γ (suc ℓ) (const `Type))
-    (B : Term (extend Γ (suc ℓ)  λ vs →
-      `⟦ eval A vs ⟧) (suc ℓ) (const `Type))
-    → Term Γ (suc ℓ) (const `Type)
-  `Type : ∀{ℓ} → Term Γ (suc ℓ) (const `Type)
-  -- `⟦_⟧ : ∀{ℓ}
-  --   → Term Γ ℓ (const `Type)
-  --   → Term Γ (suc ℓ) (const `Type)
-
-  {- Value Introduction -}
-  -- `lift : ∀{ℓ Τ} (e : Term Γ ℓ Τ)
-  --  → Term Γ (suc ℓ) λ vs → `⟦ Τ vs ⟧
-  `true `false : ∀{ℓ} → Term Γ ℓ (const `Bool)
-  _`,_ : ∀{ℓ Τ} {Τ′ : ScopedType₂ Γ ℓ Τ}
-   (e : Term Γ ℓ Τ)
-   (e′ : Term Γ ℓ λ vs → Τ′ vs (eval e vs))
-   → Term Γ ℓ λ vs → `Σ (Τ vs) λ v → Τ′ vs v
-
-  {- Value Elimination -}
-  -- `lower : ∀{ℓ Τ}
-  --   (e : Term Γ (suc ℓ) λ vs → `⟦ Τ vs ⟧)
-  --   → Term Γ ℓ Τ
-  -- `caseBool : ∀{ℓ}
-  --   (P : Term (extend Γ ℓ (const `Bool))
-  --     (suc ℓ) (const `Type))
-  --   (e₁ : Term Γ ℓ λ vs → eval P (vs , true))
-  --   (e₂ : Term Γ ℓ λ vs → eval P (vs , false))
-  --   (e : Term Γ ℓ (const `Bool))
-  --   → Term Γ ℓ λ vs → eval P (vs , eval e vs)
-  -- `proj₁ : ∀{ℓ Τ} {Τ′ : ScopedType₂ Γ ℓ Τ}
-  --   (e : Term Γ ℓ (λ vs → `Σ (Τ vs) (Τ′ vs)))
-  --   → Term Γ ℓ Τ
-  -- `proj₂ : ∀{ℓ}
-  --   {Τ : ScopedType Γ ℓ} {Τ′ : ScopedType₂ Γ ℓ Τ}
-  --   (e : Term Γ ℓ (λ vs → `Σ (Τ vs) (Τ′ vs)))
-  --   → Term Γ ℓ λ vs → Τ′ vs (proj₁ (eval e vs))
-
-{- Type Formation -}
-eval `Bool vs = `Bool
-eval (`Σ A B) vs = `Σ (eval A vs) λ v → eval B (vs , v)
-eval `Type vs = `Type
--- eval `⟦ A ⟧ vs = `⟦ eval A vs ⟧
-
-{- Value Introduction -}
-eval `true vs = true
-eval `false vs = false
-eval (e `, e′) vs = eval e vs , eval e′ vs
-
-{- Value Elimination -}
--- eval (`lower e) vs = eval e vs
--- eval (`caseBool {ℓ} P e₁ e₂ e) vs =
---   caseBool (λ b → ⟦ ℓ ∣ eval P (vs , b) ⟧)
---   (eval e₁ vs) (eval e₂ vs) (eval e vs)
--- eval (`proj₁ e) vs = proj₁ (eval e vs)
--- eval (`proj₂ e) vs = proj₂ (eval e vs)
+compare : ∀{Γ A B} (i : Var Γ A) (j : Var Γ B) → Compare i j
+compare here here = equal
+compare here (there j) = diff here j
+compare (there i) here = diff (there i) here
+compare (there i) (there j) with compare i j
+compare (there i) (there .i) | equal = equal
+compare (there .i) (there .(wknV i j)) | diff i j = diff (there i) (there j)
 
 ----------------------------------------------------------------------
 
-compare : ∀{Γ ℓ A B} (a : Term Γ ℓ A) (b : Term Γ ℓ B) → Maybe (a ≅ b)
-compare `Bool `Bool = just refl
-compare `Type `Type = just refl
-compare `true `true = just refl
-compare `false `false = just refl
-compare (`Σ A B) (`Σ A′ B′) with compare A A′
-compare (`Σ A B) (`Σ ._ B′) | just refl with compare B B′
-compare (`Σ A B) (`Σ ._ ._) | just refl | just refl = just refl
-compare (`Σ A B) (`Σ ._ B′) | just refl | nothing = nothing
-compare (`Σ A B) (`Σ A′ B′) | nothing = nothing
-compare (a `, b) (a′ `, b′) with compare a a′ | compare b b′
-... | just p | just q = nothing -- TODO just (cong₂ _`,_ p q)
-... | _ | _ = nothing
-compare _ _ = nothing
+data Val : Con → Type → Set
+data NVal : Con → Type → Set
 
-isΣ : ∀{Γ ℓ Τ} (X : Term Γ (suc ℓ) Τ) → Maybe (Σ (Term Γ (suc ℓ) (const `Type))
-  (λ A → Σ (Term (extend Γ (suc ℓ)  λ vs →
-      `⟦ eval A vs ⟧) (suc ℓ) (const `Type))
-     (λ B → _≅_ X {B = Term Γ (suc ℓ) (const `Type)} (`Σ A B))))
-isΣ (`Σ A B) = just (A , B , refl)
-isΣ X = nothing
+data Val where
+  `tt : ∀{Γ} → Val Γ `⊤
+  `true `false : ∀{Γ} → Val Γ `Bool
+  `neutral : ∀{Γ A} → NVal Γ A → Val Γ A
+
+data NVal where
+  `var : ∀{Γ A} → Var Γ A → NVal Γ A
+  `if_then_else_ : ∀{Γ C}
+    (b : NVal Γ `Bool) (c₁ c₂ : Val Γ C)
+    → NVal Γ C
+
+----------------------------------------------------------------------
+
+if_then_else_ : ∀{Γ C} (b : Val Γ `Bool) (c₁ c₂ : Val Γ C) → Val Γ C
+if `true then c₁ else c₂ = c₁
+if `false then c₁ else c₂ = c₂
+if `neutral n then c₁ else c₂ = `neutral (`if n then c₁ else c₂)
+
+----------------------------------------------------------------------
+
+subV : ∀{Γ A B} → Val Γ B → (i : Var Γ A) → Val (Γ - i) A → Val (Γ - i) B
+subNV : ∀{Γ A B} → NVal Γ B → (i : Var Γ A) → Val (Γ - i) A → Val (Γ - i) B
+
+subV `tt i x = `tt
+subV `true i x = `true
+subV `false i x = `false
+subV (`neutral n) i x = subNV n i x
+
+subNV (`var j) i x with compare i j
+subNV (`var .i) i x | equal = x
+subNV (`var .(wknV i j)) .i x | diff i j = `neutral (`var j)
+subNV (`if b then c₁ else c₂) i x = if subNV b i x then subV c₁ i x else subV c₂ i x
+
+----------------------------------------------------------------------
+
+data Term : Con → Type → Set where
+  `var : ∀{Γ A} → Var Γ A → Term Γ A
+  `tt : ∀{Γ} → Term Γ `⊤
+  `true `false : ∀{Γ} → Term Γ `Bool
+  `if_then_else_ : ∀{Γ C}
+    (b : Term Γ `Bool) (c₁ c₂ : Term Γ C)
+    → Term Γ C
+
+eval : ∀{Γ A} → Term Γ A → Val Γ A
+eval (`var i) = `neutral (`var i)
+eval `tt = `tt
+eval `true = `true
+eval `false = `false
+eval (`if b then c₁ else c₂) = if eval b then eval c₁ else eval c₂
+
+----------------------------------------------------------------------
+
+embV : ∀{Γ A} → Val Γ A → Term Γ A
+embNV : ∀{Γ A} → NVal Γ A → Term Γ A
+
+embV `tt = `tt
+embV `true = `true
+embV `false = `false
+embV (`neutral n) = embNV n
+
+embNV (`var i) = `var i
+embNV (`if b then c₁ else c₂) = `if embNV b then embV c₁ else embV c₂
 
 ----------------------------------------------------------------------
