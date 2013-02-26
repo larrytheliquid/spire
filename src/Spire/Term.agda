@@ -28,17 +28,17 @@ wknV here j = there j
 wknV (there i) here = here
 wknV (there i) (there j) = there (wknV i j)
 
-data Compare {Γ} : {A B : Type} → Var Γ A → Var Γ B → Set where
-  equal : ∀{A} {i : Var Γ A} → Compare i i
-  diff : ∀{A B} (i : Var Γ A) (j : Var (Γ - i) B) → Compare i (wknV i j)
+data Compare {Γ A} (i : Var Γ A) : {B : Type} → Var Γ B → Set where
+  equal : Compare i i
+  diff : ∀{B} (j : Var (Γ - i) B) → Compare i (wknV i j)
 
 compare : ∀{Γ A B} (i : Var Γ A) (j : Var Γ B) → Compare i j
 compare here here = equal
-compare here (there j) = diff here j
-compare (there i) here = diff (there i) here
+compare here (there j) = diff j
+compare (there i) here = diff here
 compare (there i) (there j) with compare i j
 compare (there i) (there .i) | equal = equal
-compare (there .i) (there .(wknV i j)) | diff i j = diff (there i) (there j)
+compare (there i) (there .(wknV i j)) | diff j = diff (there j)
 
 ----------------------------------------------------------------------
 
@@ -75,7 +75,7 @@ subV (`neutral n) i x = subNV n i x
 
 subNV (`var j) i x with compare i j
 subNV (`var .i) i x | equal = x
-subNV (`var .(wknV i j)) .i x | diff i j = `neutral (`var j)
+subNV (`var .(wknV i j)) i x | diff j = `neutral (`var j)
 subNV (`if b then c₁ else c₂) i x = if subNV b i x then subV c₁ i x else subV c₂ i x
 
 ----------------------------------------------------------------------

@@ -1,4 +1,3 @@
-open import Data.Unit
 module DependentTerm where
 
 ----------------------------------------------------------------------
@@ -88,6 +87,22 @@ subT `⊤ i x = `⊤
 subT `Bool i x = `Bool
 subT (`neutral n) i x = subNT n i x
 
+postulate
+  wknVal : ∀{Γ A} (i : Var Γ A) (x : Val (strC i) (strT i)) → Val (subC i x) (subT A i x)
+
+wknVar : ∀{Γ A B} (i : Var Γ A) (x : Val (strC i) (strT i)) → Var (subC i x) (subT B i x) → Var Γ B
+wknVar i x j = {!!}
+
+data Compare {Γ} {A : Type Γ} (i : Var Γ A) : {B : Type Γ} → Var Γ B → Val (strC i) (strT i) → Set where
+  equal : (x : Val (strC i) (strT i)) → Compare i i x
+  diff : ∀{B}
+    (x : Val (strC i) (strT i))
+    (j : Var (subC i x) (subT B i x))
+    → Compare i {B = B} (wknVar i x j) x
+
+postulate
+  compare : ∀{Γ A B} (i : Var Γ A) (j : Var Γ B) (x : Val (strC i) (strT i)) → Compare i j x
+
 subNT (`if b then A else B) i x = if (subNV b i x) then subT A i x else subT B i x
 
 subV `tt i x = `tt
@@ -96,6 +111,9 @@ subV `false i x = `false
 subV (`neutral n) i x = subNV n i x
 
 subNV (`var j) i x = {!!}
+-- with compare i j x
+-- subNV (`var .i) i .x | equal x = wknVal i x
+-- subNV (`var .(wknVar i x j)) i .x | diff x j = `neutral (`var j)
 subNV (`not b) i x = not (subNV b i x)
 
 ----------------------------------------------------------------------
