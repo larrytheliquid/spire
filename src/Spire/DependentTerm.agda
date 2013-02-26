@@ -88,12 +88,12 @@ subT `Bool i x = `Bool
 subT (`neutral n) i x = subNT n i x
 
 postulate
-  wknVal : ∀{Γ A} (i : Var Γ A) (x : Val (strC i) (strT i)) → Val (subC i x) (subT A i x)
+  wknVal : ∀{Γ A} (i : Var Γ A) (x : Sub i) → Val (subC i x) (subT A i x)
 
-wknVar : ∀{Γ A B} (i : Var Γ A) (x : Val (strC i) (strT i)) → Var (subC i x) (subT B i x) → Var Γ B
+wknVar : ∀{Γ A B} (i : Var Γ A) (x : Sub i) → Var (subC i x) (subT B i x) → Var Γ B
 wknVar i x j = {!!}
 
-data Compare {Γ} {A : Type Γ} (i : Var Γ A) : {B : Type Γ} → Var Γ B → Val (strC i) (strT i) → Set where
+data Compare {Γ} {A : Type Γ} (i : Var Γ A) : {B : Type Γ} → Var Γ B → Sub i → Set where
   equal : (x : Val (strC i) (strT i)) → Compare i i x
   diff : ∀{B}
     (x : Val (strC i) (strT i))
@@ -101,7 +101,7 @@ data Compare {Γ} {A : Type Γ} (i : Var Γ A) : {B : Type Γ} → Var Γ B → 
     → Compare i {B = B} (wknVar i x j) x
 
 postulate
-  compare : ∀{Γ A B} (i : Var Γ A) (j : Var Γ B) (x : Val (strC i) (strT i)) → Compare i j x
+  compare : ∀{Γ A B} (i : Var Γ A) (j : Var Γ B) (x : Sub i) → Compare i j x
 
 subNT (`if b then A else B) i x = if (subNV b i x) then subT A i x else subT B i x
 
